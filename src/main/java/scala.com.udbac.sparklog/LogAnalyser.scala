@@ -5,13 +5,14 @@ import java.net.URLDecoder
 import eu.bitwalker.useragentutils.UserAgent
 import com.udbac.constant.SDCLogConstants
 import org.apache.spark.{SparkConf, SparkContext}
+
 import scala.collection.mutable.Map
-import scala.com.udbac.util.{QueryProperties, SplitValueBuilder}
+import scala.com.udbac.util.{IPSeekerExt, QueryProperties, SplitValueBuilder}
 /**
   * Created by root on 2017/1/12.
   */
 object LogAnalyser {
-
+ val ipSeekerExt = new IPSeekerExt
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setMaster("local").setAppName("LogAnalyser")
@@ -46,6 +47,7 @@ object LogAnalyser {
       logMap.put(SDCLogConstants.LOG_COLUMN_NAME_DCSID, lineSplits(14))
       handleQuery(logMap, lineSplits(7))
       handleUA(logMap, lineSplits(11))
+      handleIP(logMap, lineSplits(2))
     }
     logMap
   }
@@ -68,6 +70,17 @@ object LogAnalyser {
       val userAgent = UserAgent.parseUserAgentString(uaStr)
       logMap.put(SDCLogConstants.LOG_COLUMN_NAME_OS_NAME,userAgent.getOperatingSystem.getName)
       logMap.put(SDCLogConstants.LOG_COLUMN_NAME_BROWSER_NAME,userAgent.getBrowser.getName)
+    }
+  }
+
+  def handleIP(logMap: Map[String, String], ip: String): Unit ={
+    if (!ip.equals(null) && ip.length > 8){
+      val info = ipSeekerExt.analyticIp(ip)
+      if (null != info) {
+        logMap.put(SDCLogConstants.LOG_COLUMN_NAME_COUNTRY, info.getCountry)
+        logMap.put(SDCLogConstants.LOG_COLUMN_NAME_PROVINCE, info.getProvince)
+        logMap.put(SDCLogConstants.LOG_COLUMN_NAME_CITY, info.getCity)
+      }
     }
   }
 }
