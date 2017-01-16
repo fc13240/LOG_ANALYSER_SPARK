@@ -3,22 +3,23 @@ package com.udbac.sparklog
 import java.net.URLDecoder
 
 import eu.bitwalker.useragentutils.UserAgent
-import com.udbac.constant.SDCLogConstants
+import com.udbac.constant.LogConstants
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable.Map
-import scala.com.udbac.util.{IPSeekerExt, QueryProperties, SplitValueBuilder}
+import scala.com.udbac.util.{IPv4Handler, QueryProperties, SplitValueBuilder, TimeUtil}
 /**
   * Created by root on 2017/1/12.
   */
 object LogAnalyser {
- val ipSeekerExt = new IPSeekerExt
+ val ipv4Handler = new IPv4Handler
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setMaster("local").setAppName("LogAnalyser")
     val sc = new SparkContext(conf)
     val lineRDD = sc.textFile(args(0))
     lineRDD.map(line => log(line,QueryProperties.query())).saveAsTextFile(args(1))
+//    lineRDD.map(line => logParser(line)).saveAsTextFile(args(1))
   }
   def log(line: String, keys: Array[String]): SplitValueBuilder ={
       val svb = new SplitValueBuilder()
@@ -39,12 +40,14 @@ object LogAnalyser {
     val logMap = Map[String, String]()
     val lineSplits = lineStr.split(" ")
     if(lineSplits.length==15){
-      logMap.put(SDCLogConstants.LOG_COLUMN_NAME_DATE_TIME, lineSplits(0) + lineSplits(1))
-      logMap.put(SDCLogConstants.LOG_COLUMN_CS_HOST, lineSplits(4))
-      logMap.put(SDCLogConstants.LOG_COLUMN_NAME_CSMETHOD, lineSplits(5))
-      logMap.put(SDCLogConstants.LOG_COLUMN_NAME_CSURISTEM, lineSplits(6))
-      logMap.put(SDCLogConstants.LOG_COLUMN_NAME_SCSTATUS, lineSplits(8))
-      logMap.put(SDCLogConstants.LOG_COLUMN_NAME_DCSID, lineSplits(14))
+//      logMap.put(LogConstants.LOG_COLUMN_DATETIME, TimeUtil.handleTime(lineSplits(0) + " " + lineSplits(1)))
+      //TimeUtil.handleTime(lineSplits(0) + " " + lineSplits(1))  加8小时
+      logMap.put(LogConstants.LOG_COLUMN_DATETIME, lineSplits(0) + " " + lineSplits(1))
+      logMap.put(LogConstants.LOG_COLUMN_HOST, lineSplits(4))
+      logMap.put(LogConstants.LOG_COLUMN_METHOD, lineSplits(5))
+      logMap.put(LogConstants.LOG_COLUMN_URISTEM, lineSplits(6))
+      logMap.put(LogConstants.LOG_COLUMN_STATUS, lineSplits(8))
+      logMap.put(LogConstants.LOG_COLUMN_DCSID, lineSplits(14))
       handleQuery(logMap, lineSplits(7))
       handleUA(logMap, lineSplits(11))
       handleIP(logMap, lineSplits(2))
@@ -68,18 +71,18 @@ object LogAnalyser {
   def handleUA(logMap: Map[String, String], uaStr: String): Unit = {
     if (!uaStr.equals(null)) {
       val userAgent = UserAgent.parseUserAgentString(uaStr)
-      logMap.put(SDCLogConstants.LOG_COLUMN_NAME_OS_NAME,userAgent.getOperatingSystem.getName)
-      logMap.put(SDCLogConstants.LOG_COLUMN_NAME_BROWSER_NAME,userAgent.getBrowser.getName)
+      logMap.put(LogConstants.UA_OS_NAME,userAgent.getOperatingSystem.getName)
+      logMap.put(LogConstants.UA_BROWSER_NAME,userAgent.getBrowser.getName)
     }
   }
 
   def handleIP(logMap: Map[String, String], ip: String): Unit ={
     if (!ip.equals(null) && ip.length > 8){
-      val info = ipSeekerExt.analyticIp(ip)
+      val info = IPv4Handler.getIPcode(ip)
+      val area = IPv4Handler.getArea(ip)
       if (null != info) {
-        logMap.put(SDCLogConstants.LOG_COLUMN_NAME_COUNTRY, info.getCountry)
-        logMap.put(SDCLogConstants.LOG_COLUMN_NAME_PROVINCE, info.getProvince)
-        logMap.put(SDCLogConstants.LOG_COLUMN_NAME_CITY, info.getCity)
+        logMap.put(LogConstants.LOG_COLUMN_IPCODE,info)
+        logMap.put(LogConstants.LOG_COLUMN_IP,area(0)+area(1))
       }
     }
   }
