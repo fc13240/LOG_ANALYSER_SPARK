@@ -7,7 +7,7 @@ import com.udbac.constant.LogConstants
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable.Map
-import scala.com.udbac.util.{IPv4Handler, QueryProperties, SplitValueBuilder, TimeUtil}
+import scala.com.udbac.util.{IPv4Handler, QueryProperties, SplitValueBuilder}
 /**
   * Created by root on 2017/1/12.
   */
