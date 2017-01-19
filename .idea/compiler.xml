@@ -26,7 +26,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="LOG_ANALYSER_SPARK" target="1.5" />
+      <module name="LOG_ANALYSER_SPARK" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

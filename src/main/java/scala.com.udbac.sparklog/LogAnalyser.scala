@@ -15,22 +15,20 @@ object LogAnalyser {
  val ipv4Handler = new IPv4Handler
 
   def main(args: Array[String]): Unit = {
+
     val conf = new SparkConf().setMaster("local").setAppName("LogAnalyser")
     val sc = new SparkContext(conf)
     val lineRDD = sc.textFile(args(0))
     lineRDD.map(line => log(line,QueryProperties.query())).saveAsTextFile(args(1))
-//    lineRDD.map(line => logParser(line)).saveAsTextFile(args(1))
+
   }
   def log(line: String, keys: Array[String]): SplitValueBuilder ={
       val svb = new SplitValueBuilder()
-//    val logMap = logParser(line)
-//    val x = logMap.keySet
     for (key <- keys){
       for ((x,y) <- logParser(line)){
           if (x == key)
           svb.add(y)
         }
-//        svb.add(logMap.get(key))
 
       }
       svb
@@ -41,7 +39,6 @@ object LogAnalyser {
     val lineSplits = lineStr.split(" ")
     if(lineSplits.length==15){
 //      logMap.put(LogConstants.LOG_COLUMN_DATETIME, TimeUtil.handleTime(lineSplits(0) + " " + lineSplits(1)))
-      //TimeUtil.handleTime(lineSplits(0) + " " + lineSplits(1))  加8小时
       logMap.put(LogConstants.LOG_COLUMN_DATETIME, lineSplits(0) + " " + lineSplits(1))
       logMap.put(LogConstants.LOG_COLUMN_HOST, lineSplits(4))
       logMap.put(LogConstants.LOG_COLUMN_METHOD, lineSplits(5))
@@ -82,7 +79,8 @@ object LogAnalyser {
       val area = IPv4Handler.getArea(ip)
       if (null != info) {
         logMap.put(LogConstants.LOG_COLUMN_IPCODE,info)
-        logMap.put(LogConstants.LOG_COLUMN_IP,area(0)+area(1))
+        logMap.put(LogConstants.REGION_PROVINCE,area(0))
+        logMap.put(LogConstants.REGION_CITY,area(1))
       }
     }
   }

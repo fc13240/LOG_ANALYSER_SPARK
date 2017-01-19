@@ -1,5 +1,7 @@
 package scala.com.udbac.util;
 
+import org.apache.hadoop.conf.Configuration;
+
 import java.io.IOException;
 import java.util.Properties;
 
@@ -26,6 +28,8 @@ public class QueryProperties {
 //        String[] params = param.split(",");
 //        return params;
 //    }
+
+
     private static Properties prop = new Properties();
      static{
          try {
