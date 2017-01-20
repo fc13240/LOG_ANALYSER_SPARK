@@ -7,7 +7,7 @@ import com.udbac.constant.LogConstants
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable.Map
-import scala.com.udbac.util.{IPv4Handler, QueryProperties, SplitValueBuilder}
+import scala.com.udbac.util.{IPv4Handler, QueryProperties, SplitValueBuilder, Test}
 /**
   * Created by root on 2017/1/12.
   */
@@ -75,8 +75,8 @@ object LogAnalyser {
 
   def handleIP(logMap: Map[String, String], ip: String): Unit ={
     if (!ip.equals(null) && ip.length > 8){
-      val info = IPv4Handler.getIPcode(ip)
-      val area = IPv4Handler.getArea(ip)
+      val info = Test.getIPcode(ip)
+      val Some(area) = Test.getArea(ip)
       if (null != info) {
         logMap.put(LogConstants.LOG_COLUMN_IPCODE,info)
         logMap.put(LogConstants.REGION_PROVINCE,area(0))

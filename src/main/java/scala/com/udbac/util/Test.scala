@@ -40,12 +40,12 @@ object Test {
   }
 
   @throws[IOException]
-  def getArea(logIP: String): Array[String] = mapArea.get(getIPcode(logIP))
+  def getArea(logIP: String):Option[Array[String]]= mapArea.get(getIPcode(logIP))
 
   @throws[IOException]
-  def getIPcode(logIP: String): Option[String] = {
+  def getIPcode(logIP: String):String = {
 
     val index: Integer = SeaIP.searIP(sortedList, IPv4Util.ipToInt(logIP))
-    mapSegs.get(sortedList.get(index))
+    mapSegs.get(sortedList.get(index)).toString
   }
 }
